@@ -19,7 +19,7 @@ public class GoogleCloud extends Cloud {
 
     private static final Logger LOGGER = Logger.getLogger(GoogleCloud.class.getName());
 
-    private List<? extends PersistentSshSlaveSpec> persistentSshSlaveSpecs = new ArrayList<>();
+    private List<PersistentSshSlaveSpec> slaveSpecs;
 
     @DataBoundConstructor
     public GoogleCloud(String name) {
@@ -27,12 +27,12 @@ public class GoogleCloud extends Cloud {
     }
 
     @DataBoundSetter
-    public void setPersistentSshSlaveSpecs(List<? extends PersistentSshSlaveSpec> persistentSshSlaveSpecs) {
-        this.persistentSshSlaveSpecs = persistentSshSlaveSpecs;
+    public void setSlaveSpecs(List<PersistentSshSlaveSpec> slaveSpecs) {
+        this.slaveSpecs = slaveSpecs;
     }
 
-    public List<? extends PersistentSshSlaveSpec> getPersistentSshSlaveSpecs() {
-        return this.persistentSshSlaveSpecs;
+    public List<PersistentSshSlaveSpec> getSlaveSpecs() {
+        return this.slaveSpecs;
     }
 
     @Override

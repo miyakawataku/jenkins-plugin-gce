@@ -6,13 +6,13 @@
   </f:entry>
 
   <f:entry
-    title="${%Persistent SSH Slaves}"
-    description="${%List of persistent SSH slaves}">
+    title="${%Slaves}"
+    description="${%List of slaves}">
 
-    <f:repeatableHeteroProperty field="persistentSshSlaveSpecs"
+    <f:repeatableHeteroProperty field="slaveSpecs"
       hasHeader="true"
-      addCaption="Register Persistent SSH Slave"
-      deleteCaption="Unregister Slave" />
+      addCaption="Add slave"
+      deleteCaption="Remove slave" />
   </f:entry>
 
 </j:jelly>
