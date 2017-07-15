@@ -19,15 +19,16 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-public class PersistentSshSlaveSpec
-    extends AbstractDescribableImpl<PersistentSshSlaveSpec> implements Serializable {
+public class PersistentSlaveSpec
+    extends AbstractDescribableImpl<PersistentSlaveSpec>
+    implements Serializable {
 
     private String instanceName;
 
     private String label;
 
     @DataBoundConstructor
-    public PersistentSshSlaveSpec() {
+    public PersistentSlaveSpec() {
     }
 
     @DataBoundSetter
@@ -53,11 +54,11 @@ public class PersistentSshSlaveSpec
     }
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor<PersistentSshSlaveSpec> {
+    public static final class DescriptorImpl extends Descriptor<PersistentSlaveSpec> {
 
         @Override
         public String getDisplayName() {
-            return "Persistent SSH Slave";
+            return "Persistent Slave";
         }
 
         /**

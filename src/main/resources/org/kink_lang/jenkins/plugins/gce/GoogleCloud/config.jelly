@@ -6,13 +6,12 @@
   </f:entry>
 
   <f:entry
-    title="${%Slaves}"
-    description="${%List of slaves}">
-
-    <f:repeatableHeteroProperty field="slaveSpecs"
+    title="${%Persistent slaves}"
+    description="${%List of persistent slaves}">
+    <f:repeatableHeteroProperty field="persistentSlaveSpecs"
       hasHeader="true"
-      addCaption="Add slave"
-      deleteCaption="Remove slave" />
+      addCaption="Add"
+      deleteCaption="Remove" />
   </f:entry>
 
 </j:jelly>
