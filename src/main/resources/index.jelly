@@ -3,5 +3,9 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is a sample to explain how to write a Jenkins plugin.
+  This plugin provides a Cloud implementation for Google Compute Engine.
+  The plugin starts and stops existing instances on demand and uses them as slave nodes.
 </div>
+
+<!-- vim: et sw=2 sts=2 ft=xml
+-->
