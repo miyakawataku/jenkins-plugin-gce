@@ -9,9 +9,11 @@ import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner;
+import hudson.util.FormValidation;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 public class GoogleCloud extends Cloud {
 
@@ -50,6 +52,13 @@ public class GoogleCloud extends Cloud {
         public String getDisplayName() {
             return "Google Compute Engine";
         }
+
+        public FormValidation doCheckName(@QueryParameter String name) {
+            return name.trim().isEmpty()
+                ? FormValidation.error("Cloud name must be filled")
+                : FormValidation.ok();
+        }
+
     }
 
 }
