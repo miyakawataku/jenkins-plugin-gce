@@ -2,6 +2,7 @@ package org.kink_lang.jenkins.plugins.gce;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.security.GeneralSecurityException;
 
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -14,6 +15,13 @@ import hudson.slaves.AbstractCloudComputer;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.compute.Compute;
 
 public class PersistentSlave extends AbstractCloudSlave {
 
@@ -76,7 +84,15 @@ public class PersistentSlave extends AbstractCloudSlave {
 
     @Override
     protected void _terminate(TaskListener listener) throws IOException, InterruptedException {
-        throw new UnsupportedOperationException();
+        try {
+            HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+            JsonFactory jsonFactory = new JacksonFactory();
+            GoogleCredential credential = GoogleCredential.getApplicationDefault();
+            Compute compute = new Compute.Builder(transport, jsonFactory, credential).build();
+            compute.instances().stop(project, zone, name).execute();
+        } catch (GeneralSecurityException gsex) {
+            throw new RuntimeException(gsex);
+        }
     }
 
 }
