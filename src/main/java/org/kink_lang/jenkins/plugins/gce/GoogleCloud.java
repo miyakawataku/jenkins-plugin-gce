@@ -71,7 +71,12 @@ public class GoogleCloud extends Cloud {
 
     @Override
     public boolean canProvision(Label label) {
-        return true;
+        for (PersistentSlaveSpec spec : this.persistentSlaveSpecs) {
+            if (spec.canProvision(label)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
