@@ -19,11 +19,45 @@ public class GoogleCloud extends Cloud {
 
     private static final Logger LOGGER = Logger.getLogger(GoogleCloud.class.getName());
 
+    private String project;
+
+    private String zone;
+
     private List<PersistentSlaveSpec> persistentSlaveSpecs;
 
     @DataBoundConstructor
     public GoogleCloud(String name) {
         super(name);
+    }
+
+    /**
+     * Sets the project ID of slaves.
+     */
+    @DataBoundSetter
+    public void setProject(String project) {
+        this.project = project;
+    }
+
+    /**
+     * Returns the project ID of slaves.
+     */
+    public String getProject() {
+        return this.project;
+    }
+
+    /**
+     * Sets the zone ID of slaves.
+     */
+    @DataBoundSetter
+    public void setZone(String zone) {
+        this.zone = zone;
+    }
+
+    /**
+     * Returns the zone ID of slaves.
+     */
+    public String getZone() {
+        return this.zone;
     }
 
     @DataBoundSetter
@@ -53,9 +87,30 @@ public class GoogleCloud extends Cloud {
             return "Google Compute Engine";
         }
 
+        /**
+         * Validates name property.
+         */
         public FormValidation doCheckName(@QueryParameter String name) {
             return name.trim().isEmpty()
                 ? FormValidation.error("Cloud name must be filled")
+                : FormValidation.ok();
+        }
+
+        /**
+         * Validates project property.
+         */
+        public FormValidation doCheckProject(@QueryParameter String project) {
+            return project.trim().isEmpty()
+                ? FormValidation.error("Project ID must be filled")
+                : FormValidation.ok();
+        }
+
+        /**
+         * Vaidates zone property.
+         */
+        public FormValidation doCheckZone(@QueryParameter String zone) {
+            return zone.trim().isEmpty()
+                ? FormValidation.error("Zone ID must be filled")
                 : FormValidation.ok();
         }
 

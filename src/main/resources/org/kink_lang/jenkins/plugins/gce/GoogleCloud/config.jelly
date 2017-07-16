@@ -5,6 +5,14 @@
     <f:textbox default="gce" />
   </f:entry>
 
+  <f:entry title="Project ID" field="project">
+    <f:textbox />
+  </f:entry>
+
+  <f:entry title="Zone ID" field="zone">
+    <f:textbox />
+  </f:entry>
+
   <f:entry
     title="${%Persistent slaves}"
     description="${%List of persistent slaves}">

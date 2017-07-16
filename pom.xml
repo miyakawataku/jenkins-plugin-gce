@@ -76,4 +76,13 @@
   </dependencies>
   -->
 
+  <!-- See https://cloud.google.com/compute/docs/api/libraries#add-library-to-your-project -->
+  <dependencies>
+    <dependency>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-compute</artifactId>
+      <version>v1-rev150-1.22.0</version>
+    </dependency>
+  </dependencies>
+
 </project>
