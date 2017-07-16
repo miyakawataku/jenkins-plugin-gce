@@ -27,6 +27,12 @@ public class PersistentSlaveSpec
 
     private String label;
 
+    /** # of executors. */
+    private String numExecutors;
+
+    /** The description of the node. */
+    private String nodeDescription;
+
     @DataBoundConstructor
     public PersistentSlaveSpec() {
     }
@@ -53,6 +59,36 @@ public class PersistentSlaveSpec
         return Label.parse(this.label);
     }
 
+    /**
+     * Stores # of executors.
+     */
+    @DataBoundSetter
+    public void setNumExecutors(String numExecutors) {
+        this.numExecutors = numExecutors;
+    }
+
+    /**
+     * Returns # of executors.
+     */
+    public String getNumExecutors() {
+        return this.numExecutors;
+    }
+
+    /**
+     * Stores the description of the node.
+     */
+    @DataBoundSetter
+    public void setNodeDescription(String nodeDescription) {
+        this.nodeDescription = nodeDescription;
+    }
+
+    /**
+     * Returns the description of the node.
+     */
+    public String getNodeDescription() {
+        return this.nodeDescription;
+    }
+
     @Extension
     public static final class DescriptorImpl extends Descriptor<PersistentSlaveSpec> {
 
@@ -70,6 +106,15 @@ public class PersistentSlaveSpec
             return instanceName.trim().isEmpty()
                 ? FormValidation.error("Instance name must be filled")
                 : FormValidation.ok();
+        }
+
+        /**
+         * Checks # of executors.
+         */
+        public FormValidation doCheckNumExecutors(@QueryParameter String numExecutors) {
+            return numExecutors.matches("[0-9]+")
+                ? FormValidation.ok()
+                : FormValidation.error("# of executors must be an integer");
         }
 
     }
