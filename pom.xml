@@ -9,10 +9,15 @@
     <version>2.11</version>
     <relativePath/>
   </parent>
+
   <groupId>org.kink-lang</groupId>
-  <artifactId>gce-start-stop</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <artifactId>gce-jenkins-plugin</artifactId>
+  <version>0.1</version>
   <packaging>hpi</packaging>
+
+  <name>GCE Plugin</name>
+  <description>Jenkins plugin for GCE slave provisioning</description>
+  <url>https://example.org/notavailable</url>
 
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
@@ -24,10 +29,6 @@
          ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
     -->
   </properties>
-
-  <name>TODO Plugin</name>
-  <description>TODO</description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
 
   <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
 
