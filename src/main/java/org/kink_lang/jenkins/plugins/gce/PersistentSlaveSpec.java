@@ -150,9 +150,11 @@ public class PersistentSlaveSpec
         GceInstance gi = new GceInstance(project, zone, instanceName);
         JenkinsLocationConfiguration locationConfiguration = JenkinsLocationConfiguration.get();
         String jenkinsUrl = locationConfiguration.getUrl();
-        String jnlpUrl = jenkinsUrl + "/" + slave.getComputer().getUrl() + "slave-agent.jnlp";
+        String jnlpUrl = String.format("%s/%s%s", jenkinsUrl, slave.getComputer().getUrl(), "slave-agent.jnlp");
+        String slaveJarUrl = String.format("%s/%s", jenkinsUrl, "jnlpJars/slave.jar");
         Map<String, String> jenkinsMetadata = new HashMap<String, String>();
         jenkinsMetadata.put("jenkinsJnlpUrl", jnlpUrl);
+        jenkinsMetadata.put("jenkinsSlaveJarUrl", slaveJarUrl);
         jenkinsMetadata.put("jenkinsSecret", slave.getComputer().getJnlpMac());
         if (! gi.addMetadata(jenkinsMetadata)) {
             return null;
