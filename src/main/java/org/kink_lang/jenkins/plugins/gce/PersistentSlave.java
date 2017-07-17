@@ -2,6 +2,7 @@ package org.kink_lang.jenkins.plugins.gce;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Logger;
 import java.security.GeneralSecurityException;
 
 import hudson.model.Computer;
@@ -24,6 +25,8 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.compute.Compute;
 
 public class PersistentSlave extends AbstractCloudSlave {
+
+    private static final Logger LOGGER = Logger.getLogger(PersistentSlave.class.getName());
 
     /** Project of the slave. */
     private String project;
@@ -85,11 +88,10 @@ public class PersistentSlave extends AbstractCloudSlave {
     @Override
     protected void _terminate(TaskListener listener) throws IOException, InterruptedException {
         try {
-            HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
-            JsonFactory jsonFactory = new JacksonFactory();
-            GoogleCredential credential = GoogleCredential.getApplicationDefault();
-            Compute compute = new Compute.Builder(transport, jsonFactory, credential).build();
-            compute.instances().stop(project, zone, name).execute();
+            GceInstance gi = new GceInstance(project, zone, name);
+            if (! gi.stop()) {
+                LOGGER.info("failed to stop the instance");
+            }
         } catch (GeneralSecurityException gsex) {
             throw new RuntimeException(gsex);
         }

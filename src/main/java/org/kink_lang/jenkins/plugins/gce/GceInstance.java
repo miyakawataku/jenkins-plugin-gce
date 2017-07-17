@@ -82,7 +82,14 @@ public class GceInstance {
         return waitOperationResult(op);
     }
 
-    boolean waitOperationResult(Operation op) throws Exception {
+    public boolean stop() throws IOException, InterruptedException {
+        Operation op = compute.instances()
+            .stop(project, zone, name)
+            .execute();
+        return waitOperationResult(op);
+    }
+
+    boolean waitOperationResult(Operation op) throws IOException, InterruptedException {
         while (true) {
             LOGGER.info("Operation result: " + op);
             if (op.getStatus().equals("DONE")) {
