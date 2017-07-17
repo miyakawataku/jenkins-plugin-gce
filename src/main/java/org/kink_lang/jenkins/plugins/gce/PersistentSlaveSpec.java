@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
@@ -40,6 +41,8 @@ import com.google.api.services.compute.model.Metadata;
 public class PersistentSlaveSpec
     extends AbstractDescribableImpl<PersistentSlaveSpec>
     implements Serializable {
+
+    private static Logger LOGGER = Logger.getLogger(PersistentSlaveSpec.class.getName());
 
     private String instanceName;
 
@@ -111,22 +114,28 @@ public class PersistentSlaveSpec
      * Returns true if the slave can be provisioned.
      */
     public boolean canProvision(Label label) {
-        return label.matches(getLabelAtoms())
+        boolean result = label.matches(getLabelAtoms())
             && Jenkins.getInstance().getNodesObject().getNode(this.instanceName) == null;
+        LOGGER.info("canProvision => " + result);
+        return result;
     }
 
     public NodeProvisioner.PlannedNode provision(Label label, String project, String zone) {
         if (! canProvision(label)) {
+            LOGGER.info("provision: cannot provision");
             return null;
         }
 
-        PersistentSlave slave ;
+        LOGGER.info("provision: try provisioning!");
+
+        PersistentSlave slave;
         try {
             slave = new PersistentSlave(
                     project, zone, this.instanceName,
                     this.nodeDescription,
                     this.numExecutors,
                     this.label);
+            Jenkins.getInstance().addNode(slave);
         } catch (IOException ioex) {
             throw new RuntimeException(ioex);
         } catch (Descriptor.FormException formEx) {
@@ -151,6 +160,8 @@ public class PersistentSlaveSpec
         } catch (GeneralSecurityException gsex) {
             throw new RuntimeException(gsex);
         }
+
+        LOGGER.info("provision: future!");
         final Node node = slave;
         Future<Node> future = Computer.threadPoolForRemoting.submit(new Callable<Node>() {
             @Override public Node call() throws Exception { return node; }

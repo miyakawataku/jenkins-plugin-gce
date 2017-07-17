@@ -81,7 +81,19 @@ public class GoogleCloud extends Cloud {
 
     @Override
     public List<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
-        throw new UnsupportedOperationException();
+        List<NodeProvisioner.PlannedNode> result = new ArrayList<NodeProvisioner.PlannedNode>();
+        for (PersistentSlaveSpec spec : this.persistentSlaveSpecs) {
+            if (excessWorkload <= 0) {
+                break;
+            }
+
+            NodeProvisioner.PlannedNode plannedNode = spec.provision(label, getProject(), getZone());
+            if (plannedNode != null) {
+                excessWorkload -= plannedNode.numExecutors;
+                result.add(plannedNode);
+            }
+        }
+        return result;
     }
 
     @Extension
