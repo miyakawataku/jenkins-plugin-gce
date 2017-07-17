@@ -5,8 +5,10 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import java.security.GeneralSecurityException;
 
+import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
+import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.AbstractCloudSlave;
 import hudson.slaves.CloudRetentionStrategy;
@@ -36,18 +38,14 @@ public class PersistentSlave extends AbstractCloudSlave {
 
     @DataBoundConstructor
     public PersistentSlave(
-            String project,
-            String zone,
             String name,
-            String desc,
+            String nodeDescription,
             String numExecutors,
             String labelString) throws Descriptor.FormException, IOException{
-        super(name, desc, "/tmp", numExecutors, Mode.NORMAL, labelString,
+        super(name, nodeDescription, "/tmp", numExecutors, Mode.NORMAL, labelString,
                 new JNLPLauncher(),
                 new CloudRetentionStrategy(10),
                 Collections.<NodeProperty<PersistentSlave>>emptyList());
-        this.project = project;
-        this.zone = zone;
     }
 
     /**
@@ -95,6 +93,21 @@ public class PersistentSlave extends AbstractCloudSlave {
         } catch (GeneralSecurityException gsex) {
             throw new RuntimeException(gsex);
         }
+    }
+
+    @Extension
+    public static final class DescriptorImpl extends SlaveDescriptor {
+
+        @Override
+        public String getDisplayName() {
+            return "";
+        }
+
+        @Override
+        public boolean isInstantiable() {
+            return false;
+        }
+
     }
 
 }

@@ -1,6 +1,14 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+  <f:entry title="Project ID">
+    <f:textbox field="project" />
+  </f:entry>
+
+  <f:entry title="Zone ID">
+    <f:textbox field="zone" />
+  </f:entry>
 
   <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
     <f:textbox field="nodeDescription" />

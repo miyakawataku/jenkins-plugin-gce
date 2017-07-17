@@ -123,10 +123,12 @@ public class PersistentSlaveSpec
         LOGGER.info("provision: try provisioning!");
         try {
             final PersistentSlave slave = new PersistentSlave(
-                    project, zone, getInstanceName(),
+                    getInstanceName(),
                     this.nodeDescription,
                     this.numExecutors,
                     this.label);
+            slave.setProject(project);
+            slave.setZone(zone);
             Jenkins.getInstance().addNode(slave);
 
             Future<Node> future = Computer.threadPoolForRemoting.submit(new Callable<Node>() {
