@@ -2,12 +2,14 @@ package org.kink_lang.jenkins.plugins.gce;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.GeneralSecurityException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -29,14 +31,6 @@ import hudson.util.FormValidation;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.compute.Compute;
-import com.google.api.services.compute.model.Metadata;
 
 public class PersistentSlaveSpec
     extends AbstractDescribableImpl<PersistentSlaveSpec>
@@ -64,7 +58,7 @@ public class PersistentSlaveSpec
     }
 
     public String getInstanceName() {
-        return this.instanceName;
+        return this.instanceName.trim();
     }
 
     @DataBoundSetter
@@ -115,58 +109,58 @@ public class PersistentSlaveSpec
      */
     public boolean canProvision(Label label) {
         boolean result = label.matches(getLabelAtoms())
-            && Jenkins.getInstance().getNodesObject().getNode(this.instanceName) == null;
+            && Jenkins.getInstance().getNodesObject().getNode(this.getInstanceName()) == null;
         LOGGER.info("canProvision => " + result);
         return result;
     }
 
-    public NodeProvisioner.PlannedNode provision(Label label, String project, String zone) {
+    public NodeProvisioner.PlannedNode provision(Label label, final String project, final String zone) {
         if (! canProvision(label)) {
             LOGGER.info("provision: cannot provision");
             return null;
         }
 
         LOGGER.info("provision: try provisioning!");
-
-        PersistentSlave slave;
         try {
-            slave = new PersistentSlave(
-                    project, zone, this.instanceName,
+            final PersistentSlave slave = new PersistentSlave(
+                    project, zone, getInstanceName(),
                     this.nodeDescription,
                     this.numExecutors,
                     this.label);
             Jenkins.getInstance().addNode(slave);
+
+            Future<Node> future = Computer.threadPoolForRemoting.submit(new Callable<Node>() {
+                @Override public Node call() throws Exception {
+                    return setupAndLaunch(project, zone, slave);
+                }
+            });
+            return new NodeProvisioner.PlannedNode(getInstanceName(), future, slave.getComputer().getNumExecutors());
         } catch (IOException ioex) {
-            throw new RuntimeException(ioex);
-        } catch (Descriptor.FormException formEx) {
-            throw new RuntimeException(formEx);
+            LOGGER.log(Level.WARNING, "provision: failed provisioning of " + instanceName, ioex);
+            return null;
+        } catch (Descriptor.FormException formex) {
+            LOGGER.log(Level.WARNING, "provision: failed provisioning of " + instanceName, formex);
+            return null;
         }
+    }
+
+    private Node setupAndLaunch(String project, String zone, PersistentSlave slave) throws Exception {
+        GceInstance gi = new GceInstance(project, zone, instanceName);
         JenkinsLocationConfiguration locationConfiguration = JenkinsLocationConfiguration.get();
         String jenkinsUrl = locationConfiguration.getUrl();
         String jnlpUrl = jenkinsUrl + "/" + slave.getComputer().getUrl() + "slave-agent.jnlp";
-        try {
-            HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
-            JsonFactory jsonFactory = new JacksonFactory();
-            GoogleCredential credential = GoogleCredential.getApplicationDefault();
-            Compute compute = new Compute.Builder(transport, jsonFactory, credential).build();
-            Metadata metadata = new Metadata();
-            metadata.setItems(Arrays.asList(
-                        new Metadata.Items().set("jenkinsSecret", slave.getComputer().getJnlpMac()),
-                        new Metadata.Items().set("jenkinsJnlpUrl", jnlpUrl)));
-            compute.instances().setMetadata(project, zone, this.instanceName, metadata).execute();
-            compute.instances().start(project, zone, this.instanceName).execute();
-        } catch (IOException ioex) {
-            throw new RuntimeException(ioex);
-        } catch (GeneralSecurityException gsex) {
-            throw new RuntimeException(gsex);
+        Map<String, String> jenkinsMetadata = new HashMap<String, String>();
+        jenkinsMetadata.put("jenkinsJnlpUrl", jnlpUrl);
+        jenkinsMetadata.put("jenkinsSecret", slave.getComputer().getJnlpMac());
+        if (! gi.addMetadata(jenkinsMetadata)) {
+            return null;
         }
 
-        LOGGER.info("provision: future!");
-        final Node node = slave;
-        Future<Node> future = Computer.threadPoolForRemoting.submit(new Callable<Node>() {
-            @Override public Node call() throws Exception { return node; }
-        });
-        return new NodeProvisioner.PlannedNode(this.instanceName, future, slave.getComputer().getNumExecutors());
+        if (! gi.start()) {
+            return null;
+        }
+
+        return slave;
     }
 
     @Extension
