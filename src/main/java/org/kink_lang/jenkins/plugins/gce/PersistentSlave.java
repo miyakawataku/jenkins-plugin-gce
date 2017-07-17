@@ -9,7 +9,7 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.slaves.AbstractCloudSlave;
-import hudson.slaves.CloudSlaveRetentionStrategy;
+import hudson.slaves.CloudRetentionStrategy;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.AbstractCloudComputer;
@@ -44,7 +44,7 @@ public class PersistentSlave extends AbstractCloudSlave {
             String labelString) throws Descriptor.FormException, IOException{
         super(name, desc, "/tmp", numExecutors, Mode.NORMAL, labelString,
                 new JNLPLauncher(),
-                new CloudSlaveRetentionStrategy<Computer>(),
+                new CloudRetentionStrategy(10),
                 Collections.<NodeProperty<PersistentSlave>>emptyList());
         this.project = project;
         this.zone = zone;
