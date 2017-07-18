@@ -5,15 +5,19 @@
     <f:textbox/>
   </f:entry>
 
+  <f:entry field="nodeDescription" title="${%Node description}">
+    <f:textbox/>
+  </f:entry>
+
   <f:entry field="label" title="${%Labels}">
     <f:textbox/>
   </f:entry>
 
-  <f:entry field="numExecutors" title="${%# of executors}">
-    <f:textbox/>
+  <f:entry field="retentionSeconds" title="${%Retention seconds}">
+    <f:textbox default="10" />
   </f:entry>
 
-  <f:entry field="nodeDescription" title="${%Node description}">
+  <f:entry field="numExecutors" title="${%# of executors}">
     <f:textbox/>
   </f:entry>
 

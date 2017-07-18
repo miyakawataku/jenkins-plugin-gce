@@ -11,6 +11,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 
@@ -40,6 +41,9 @@ public class PersistentSlaveSpec
     private String instanceName;
 
     private String label;
+
+    /** Seconds for which the slave stays up. */
+    private String retentionSeconds;
 
     /** # of executors. */
     private String numExecutors;
@@ -104,6 +108,21 @@ public class PersistentSlaveSpec
     }
 
     /**
+     * Stores seconds for which the slave stays up.
+     */
+    @DataBoundSetter
+    public void setRetentionSeconds(String retentionSeconds) {
+        this.retentionSeconds = retentionSeconds;
+    }
+
+    /**
+     * Returns the seconds for which the slave stays up.
+     */
+    public String getRetentionSeconds() {
+        return this.retentionSeconds;
+    }
+
+    /**
      * Returns true if the slave can be provisioned.
      */
     public boolean canProvision(Label label) {
@@ -128,7 +147,8 @@ public class PersistentSlaveSpec
                     getInstanceName(),
                     this.nodeDescription,
                     this.numExecutors,
-                    this.label);
+                    this.label,
+                    getRetentionSeconds());
             slave.setProject(project);
             slave.setZone(zone);
             Jenkins.getInstance().addNode(slave);
@@ -185,6 +205,19 @@ public class PersistentSlaveSpec
             return instanceName.trim().isEmpty()
                 ? FormValidation.error("Instance name must be filled")
                 : FormValidation.ok();
+        }
+
+        /** Pattern of decimal numbers. */
+        private static final Pattern DECIMAL_PATTERN = Pattern.compile("[0-9]+");
+
+        /**
+         * Checks retentionSeconds field.
+         */
+        public FormValidation doCheckRetentionSeconds(@QueryParameter String retentionSeconds) {
+            return DECIMAL_PATTERN.matcher(retentionSeconds).matches()
+                ? FormValidation.ok()
+                : FormValidation.error("Retention seconds must be a decimal number");
+
         }
 
         /**
