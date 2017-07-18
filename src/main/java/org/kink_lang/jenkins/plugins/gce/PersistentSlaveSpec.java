@@ -15,7 +15,6 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
-import jenkins.model.JenkinsLocationConfiguration;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
@@ -114,6 +113,9 @@ public class PersistentSlaveSpec
         return result;
     }
 
+    /**
+     * Provisions the specified instance.
+     */
     public NodeProvisioner.PlannedNode provision(Label label, final String project, final String zone) {
         if (! canProvision(label)) {
             LOGGER.info("provision: cannot provision");
@@ -138,29 +140,28 @@ public class PersistentSlaveSpec
             });
             return new NodeProvisioner.PlannedNode(getInstanceName(), future, slave.getComputer().getNumExecutors());
         } catch (IOException ioex) {
-            LOGGER.log(Level.WARNING, "provision: failed provisioning of " + instanceName, ioex);
+            LOGGER.log(Level.WARNING, "provision: failed provisioning of " + getInstanceName(), ioex);
             return null;
         } catch (Descriptor.FormException formex) {
-            LOGGER.log(Level.WARNING, "provision: failed provisioning of " + instanceName, formex);
+            LOGGER.log(Level.WARNING, "provision: failed provisioning of " + getInstanceName(), formex);
             return null;
         }
     }
 
+    /**
+     * Sets up and launches the instance.
+     */
     private Node setupAndLaunch(String project, String zone, PersistentSlave slave) throws Exception {
         GceInstance gi = new GceInstance(project, zone, instanceName);
-        JenkinsLocationConfiguration locationConfiguration = JenkinsLocationConfiguration.get();
-        String jenkinsUrl = locationConfiguration.getUrl();
-        String jnlpUrl = String.format("%s/%s%s", jenkinsUrl, slave.getComputer().getUrl(), "slave-agent.jnlp");
-        String slaveJarUrl = String.format("%s/%s", jenkinsUrl, "jnlpJars/slave.jar");
         Map<String, String> jenkinsMetadata = new HashMap<String, String>();
-        jenkinsMetadata.put("jenkinsJnlpUrl", jnlpUrl);
-        jenkinsMetadata.put("jenkinsSlaveJarUrl", slaveJarUrl);
         jenkinsMetadata.put("jenkinsSecret", slave.getComputer().getJnlpMac());
         if (! gi.addMetadata(jenkinsMetadata)) {
+            LOGGER.warning("provision: failed to add metadata for " + getInstanceName());
             return null;
         }
 
         if (! gi.start()) {
+            LOGGER.warning("provision: failed to start " + getInstanceName());
             return null;
         }
 

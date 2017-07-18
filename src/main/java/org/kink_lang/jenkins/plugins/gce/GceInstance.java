@@ -60,8 +60,10 @@ public class GceInstance {
 
     private Metadata updateMetadata(Metadata metadata, Map<String, String> added) throws Exception {
         Map<String, String> map = new HashMap<String, String>();
-        for (Metadata.Items item : metadata.getItems()) {
-            map.put(item.getKey(), item.getValue());
+        if (metadata.getItems() != null) {
+            for (Metadata.Items item : metadata.getItems()) {
+                map.put(item.getKey(), item.getValue());
+            }
         }
         map.putAll(added);
 
