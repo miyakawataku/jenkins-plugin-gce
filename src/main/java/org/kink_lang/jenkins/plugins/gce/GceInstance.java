@@ -46,7 +46,9 @@ public class GceInstance {
         this.transport = GoogleNetHttpTransport.newTrustedTransport();
         this.jsonFactory = new JacksonFactory();
         this.credential = GoogleCredential.getApplicationDefault();
-        this.compute = new Compute.Builder(transport, jsonFactory, credential).build();
+        this.compute = new Compute.Builder(transport, jsonFactory, credential)
+            .setApplicationName("Jenkins")
+            .build();
     }
 
     public boolean addMetadata(Map<String, String> addedMetadata) throws Exception {
