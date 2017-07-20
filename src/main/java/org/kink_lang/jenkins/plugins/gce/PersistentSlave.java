@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.security.GeneralSecurityException;
+
+import jenkins.model.Jenkins;
 
 import hudson.Extension;
 import hudson.model.Computer;
@@ -34,11 +35,8 @@ public class PersistentSlave extends AbstractCloudSlave {
 
     private static final Logger LOGGER = Logger.getLogger(PersistentSlave.class.getName());
 
-    /** Project of the slave. */
-    private String project;
-
-    /** Zone of the slave. */
-    private String zone;
+    /** Cloud name. */
+    private String cloudName;
 
     /** Seconds for which the slave stays up when idle. */
     private String retentionSeconds;
@@ -58,33 +56,18 @@ public class PersistentSlave extends AbstractCloudSlave {
     }
 
     /**
-     * Stores the project ID.
+     * Stores the cloud name.
      */
     @DataBoundSetter
-    public void setProject(String project) {
-        this.project = project;
+    public void setCloudName(String cloudName) {
+        this.cloudName = cloudName;
     }
 
     /**
-     * Returns the project ID.
+     * Returns the cloud name.
      */
-    public String getProject() {
-        return this.project;
-    }
-
-    /**
-     * Stores the zone ID.
-     */
-    @DataBoundSetter
-    public void setZone(String zone) {
-        this.zone = zone;
-    }
-
-    /**
-     * Returns the zone ID.
-     */
-    public String getZone() {
-        return this.zone;
+    public String getCloudName() {
+        return this.cloudName;
     }
 
     /**
@@ -109,14 +92,8 @@ public class PersistentSlave extends AbstractCloudSlave {
 
     @Override
     protected void _terminate(TaskListener listener) throws IOException, InterruptedException {
-        try {
-            GceInstance gi = new GceInstance(project, zone, name);
-            if (! gi.stop()) {
-                LOGGER.info("failed to stop the instance");
-            }
-        } catch (GeneralSecurityException gsex) {
-            throw new RuntimeException(gsex);
-        }
+        GoogleCloud cloud = (GoogleCloud) Jenkins.getInstance().getCloud(cloudName);
+        cloud.terminate(this.name);
     }
 
     @Extension

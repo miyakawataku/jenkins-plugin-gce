@@ -1,8 +1,12 @@
 package org.kink_lang.jenkins.plugins.gce;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.security.GeneralSecurityException;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -104,13 +108,47 @@ public class GoogleCloud extends Cloud {
                 break;
             }
 
-            NodeProvisioner.PlannedNode plannedNode = spec.provision(label, getProject(), getZone());
+            NodeProvisioner.PlannedNode plannedNode = spec.provision(this, label, getProject(), getZone());
             if (plannedNode != null) {
                 excessWorkload -= plannedNode.numExecutors;
                 result.add(plannedNode);
             }
         }
         return result;
+    }
+
+    /**
+     * Sets up and launches the instance.
+     */
+    public PersistentSlave setupAndLaunch(PersistentSlave slave) throws Exception {
+        GceInstance gi = new GceInstance(project, zone, slave.getNodeName());
+        Map<String, String> jenkinsMetadata = new HashMap<String, String>();
+        jenkinsMetadata.put("jenkinsSecret", slave.getComputer().getJnlpMac());
+        if (! gi.addMetadata(jenkinsMetadata)) {
+            LOGGER.warning("provision: failed to add metadata for " + slave.getNodeName());
+            return null;
+        }
+
+        if (! gi.start()) {
+            LOGGER.warning("provision: failed to start " + slave.getNodeName());
+            return null;
+        }
+
+        return slave;
+    }
+
+    /**
+     * Terminates the instance.
+     */
+    public void terminate(String instanceName) throws IOException, InterruptedException {
+        try {
+            GceInstance gi = new GceInstance(project, zone, instanceName);
+            if (! gi.stop()) {
+                LOGGER.info("failed to stop the instance");
+            }
+        } catch (GeneralSecurityException gsex) {
+            throw new RuntimeException(gsex);
+        }
     }
 
     @Extension

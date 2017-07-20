@@ -2,10 +2,6 @@ package org.kink_lang.jenkins.plugins.gce;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -135,7 +131,8 @@ public class PersistentSlaveSpec
     /**
      * Provisions the specified instance.
      */
-    public NodeProvisioner.PlannedNode provision(Label label, final String project, final String zone) {
+    public NodeProvisioner.PlannedNode provision(
+            final GoogleCloud cloud, Label label, final String project, final String zone) {
         if (! canProvision(label)) {
             LOGGER.info("provision: cannot provision");
             return null;
@@ -149,13 +146,12 @@ public class PersistentSlaveSpec
                     this.numExecutors,
                     this.label,
                     getRetentionSeconds());
-            slave.setProject(project);
-            slave.setZone(zone);
+            slave.setCloudName(cloud.name);
             Jenkins.getInstance().addNode(slave);
 
             Future<Node> future = Computer.threadPoolForRemoting.submit(new Callable<Node>() {
                 @Override public Node call() throws Exception {
-                    return setupAndLaunch(project, zone, slave);
+                    return cloud.setupAndLaunch(slave);
                 }
             });
             return new NodeProvisioner.PlannedNode(getInstanceName(), future, slave.getComputer().getNumExecutors());
@@ -166,26 +162,6 @@ public class PersistentSlaveSpec
             LOGGER.log(Level.WARNING, "provision: failed provisioning of " + getInstanceName(), formex);
             return null;
         }
-    }
-
-    /**
-     * Sets up and launches the instance.
-     */
-    private Node setupAndLaunch(String project, String zone, PersistentSlave slave) throws Exception {
-        GceInstance gi = new GceInstance(project, zone, instanceName);
-        Map<String, String> jenkinsMetadata = new HashMap<String, String>();
-        jenkinsMetadata.put("jenkinsSecret", slave.getComputer().getJnlpMac());
-        if (! gi.addMetadata(jenkinsMetadata)) {
-            LOGGER.warning("provision: failed to add metadata for " + getInstanceName());
-            return null;
-        }
-
-        if (! gi.start()) {
-            LOGGER.warning("provision: failed to start " + getInstanceName());
-            return null;
-        }
-
-        return slave;
     }
 
     @Extension
