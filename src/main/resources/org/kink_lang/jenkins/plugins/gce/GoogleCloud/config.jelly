@@ -13,14 +13,20 @@
     <f:textbox />
   </f:entry>
 
-  <f:entry
-    title="${%Persistent slaves}"
-    description="${%List of persistent slaves}">
-    <f:repeatableHeteroProperty field="persistentSlaveSpecs"
-      hasHeader="true"
-      addCaption="Add"
-      deleteCaption="Remove" />
+  <f:entry title="Credentials file path on master" field="credentialsFilePath" description="Leave it empty to use Application Default Credentials">
+    <f:textbox />
   </f:entry>
+
+  <f:section title="Slaves">
+    <f:entry
+      title="${%Persistent slaves}"
+      description="${%List of persistent slaves}">
+      <f:repeatableHeteroProperty field="persistentSlaveSpecs"
+        hasHeader="true"
+        addCaption="Add"
+        deleteCaption="Remove" />
+    </f:entry>
+  </f:section>
 
 </j:jelly>
 

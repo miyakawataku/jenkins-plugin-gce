@@ -23,6 +23,8 @@ public class GoogleCloud extends Cloud {
 
     private String zone;
 
+    private String credentialsFilePath;
+
     private List<PersistentSlaveSpec> persistentSlaveSpecs;
 
     @DataBoundConstructor
@@ -67,6 +69,21 @@ public class GoogleCloud extends Cloud {
 
     public List<PersistentSlaveSpec> getPersistentSlaveSpecs() {
         return this.persistentSlaveSpecs;
+    }
+
+    /**
+     * Stores the path of the credentials file.
+     */
+    @DataBoundSetter
+    public void setCredentialsFilePath(String credentialsFilePath) {
+        this.credentialsFilePath = credentialsFilePath;
+    }
+
+    /**
+     * Returns the path of the credentials file.
+     */
+    public String getCredentialsFilePath() {
+        return this.credentialsFilePath;
     }
 
     @Override
