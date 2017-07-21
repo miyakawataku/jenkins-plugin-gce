@@ -14,6 +14,7 @@ import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.AbstractCloudSlave;
 import hudson.slaves.AbstractCloudComputer;
+import hudson.slaves.Cloud;
 import hudson.slaves.CloudRetentionStrategy;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
@@ -90,9 +91,29 @@ public class PersistentSlave extends AbstractCloudSlave {
         return new PersistentComputer(this);
     }
 
+    /**
+     * Returns the cloud which makes the slave.
+     */
+    private GoogleCloud getCloud() {
+        Cloud cloud = Jenkins.getInstance().getCloud(cloudName);
+        if (cloud == null) {
+            String msg = String.format(
+                    "cannot terminate the slave instance: cloud %s not found", cloudName);
+            throw new RuntimeException(msg);
+        }
+
+        if (! (cloud instanceof GoogleCloud)) {
+            String msg = String.format(
+                    "cannot terminate the slave instance: cloud %s is not a GoogleCloud", cloudName);
+            throw new RuntimeException(msg);
+        }
+
+        return (GoogleCloud) cloud;
+    }
+
     @Override
     protected void _terminate(TaskListener listener) throws IOException, InterruptedException {
-        GoogleCloud cloud = (GoogleCloud) Jenkins.getInstance().getCloud(cloudName);
+        GoogleCloud cloud = getCloud();
         cloud.terminate(this.name);
     }
 
