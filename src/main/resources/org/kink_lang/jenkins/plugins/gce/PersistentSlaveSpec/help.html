@@ -1,0 +1,37 @@
+<p>Slaves are configured as JNLP slaves.
+  Hence you should firstly
+  <a href="https://wiki.jenkins.io/display/JENKINS/Distributed+builds#Distributedbuilds-LaunchslaveagentviaJavaWebStart">enable JNLP</a>.
+</p>
+
+<p>The slave instances should execute slave.jar to connect the master, using the secret
+  set to the instance metadata attribute “jenkinsSecret”.
+  One way to do that is placing the shell script below on the slave instances,
+  and configure the script as a sytemd service.
+</p>
+
+<pre>
+#!/bin/bash
+
+while true; do
+  jenkinsSecret=`curl --fail -H 'Metadata-Flavor: Google' \
+    'http://metadata/computeMetadata/v1/instance/attributes/jenkinsSecret'`
+  if [ $? -eq 0 ]; then
+    break
+  fi
+  sleep 5
+done
+
+master_host={{MASTER_HOST}}
+master_port={{MASTER_PORT}}
+master_root_url=http://$${master_host}:$${master_port}
+slave_host=`hostname`
+
+wget -O slave.jar "$${master_root_url}/jnlpJars/slave.jar"
+
+java -jar slave.jar \
+  -jnlpUrl "$${master_root_url}/computer/$${slave_host}/slave-agent.jnlp" \
+  -secret "$${jenkinsSecret}"
+</pre>
+
+<!-- vim: et sw=2 sts=2 ft=html
+-->
