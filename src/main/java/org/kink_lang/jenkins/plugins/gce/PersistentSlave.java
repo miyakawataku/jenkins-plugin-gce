@@ -46,10 +46,11 @@ public class PersistentSlave extends AbstractCloudSlave {
     public PersistentSlave(
             String name,
             String nodeDescription,
+            String remoteFS,
             String numExecutors,
             String labelString,
             String retentionSeconds) throws Descriptor.FormException, IOException{
-        super(name, nodeDescription, "/tmp", numExecutors, Mode.NORMAL, labelString,
+        super(name, nodeDescription, remoteFS, numExecutors, Mode.NORMAL, labelString,
                 new JNLPLauncher(),
                 new CloudRetentionStrategy(Integer.parseInt(retentionSeconds)),
                 Collections.<NodeProperty<PersistentSlave>>emptyList());

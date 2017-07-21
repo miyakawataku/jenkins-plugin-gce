@@ -47,6 +47,9 @@ public class PersistentSlaveSpec
     /** The description of the node. */
     private String nodeDescription;
 
+    /** The remote FS root. */
+    private String remoteFS;
+
     @DataBoundConstructor
     public PersistentSlaveSpec() {
     }
@@ -104,6 +107,21 @@ public class PersistentSlaveSpec
     }
 
     /**
+     * Stores the remote FS root path.
+     */
+    @DataBoundSetter
+    public void setRemoteFS(String remoteFS) {
+        this.remoteFS = remoteFS;
+    }
+
+    /**
+     * Returns the remote FS root path.
+     */
+    public String getRemoteFS() {
+        return this.remoteFS;
+    }
+
+    /**
      * Stores seconds for which the slave stays up.
      */
     @DataBoundSetter
@@ -143,6 +161,7 @@ public class PersistentSlaveSpec
             final PersistentSlave slave = new PersistentSlave(
                     getInstanceName(),
                     this.nodeDescription,
+                    this.remoteFS,
                     this.numExecutors,
                     this.label,
                     getRetentionSeconds());
@@ -203,6 +222,15 @@ public class PersistentSlaveSpec
             return numExecutors.matches("[0-9]+")
                 ? FormValidation.ok()
                 : FormValidation.error("# of executors must be an integer");
+        }
+
+        /**
+         * Checks remoteFS.
+         */
+        public FormValidation doCheckRemoteFS(@QueryParameter String remoteFS) {
+            return remoteFS.isEmpty()
+                ? FormValidation.error("Remote FS root must be filled")
+                : FormValidation.ok();
         }
 
     }

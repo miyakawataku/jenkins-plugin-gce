@@ -9,6 +9,10 @@
     <f:textbox/>
   </f:entry>
 
+  <f:entry field="remoteFS" title="${%Remote FS root}">
+    <f:textbox/>
+  </f:entry>
+
   <f:entry field="label" title="${%Labels}">
     <f:textbox/>
   </f:entry>
