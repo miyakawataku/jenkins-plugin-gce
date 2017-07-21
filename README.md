@@ -46,9 +46,6 @@ and configure it as a systemd service.
       -jnlpUrl "${master_root_url}/computer/${slave_host}/slave-agent.jnlp" \
       -secret "${jenkinsSecret}"
 
-Currently, this plugin uses the Application Default Credentials
-to manipluate GCE instances.
-
 ## License
 
 GCE Jenkins Plugin is distributed by MIT license.

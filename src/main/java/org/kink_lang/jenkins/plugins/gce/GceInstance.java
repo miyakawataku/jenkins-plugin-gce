@@ -25,6 +25,8 @@ public class GceInstance {
 
     private static final Logger LOGGER = Logger.getLogger(GceInstance.class.getName());
 
+    private final GoogleCredential credential;
+
     private final String project;
 
     private final String zone;
@@ -35,17 +37,17 @@ public class GceInstance {
 
     private final JsonFactory jsonFactory;
 
-    private final GoogleCredential credential;
-
     private final Compute compute;
 
-    public GceInstance(String project, String zone, String name) throws IOException, GeneralSecurityException {
+    public GceInstance(
+            GoogleCredential credential, String project, String zone, String name
+            ) throws IOException, GeneralSecurityException {
+        this.credential = credential;
         this.project = project;
         this.zone = zone;
         this.name = name;
         this.transport = GoogleNetHttpTransport.newTrustedTransport();
         this.jsonFactory = new JacksonFactory();
-        this.credential = GoogleCredential.getApplicationDefault();
         this.compute = new Compute.Builder(transport, jsonFactory, credential)
             .setApplicationName("Jenkins")
             .build();

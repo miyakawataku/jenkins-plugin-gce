@@ -1,7 +1,9 @@
 package org.kink_lang.jenkins.plugins.gce;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,16 +21,23 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+
 public class GoogleCloud extends Cloud {
 
+    /** Logger of this class. */
     private static final Logger LOGGER = Logger.getLogger(GoogleCloud.class.getName());
 
+    /** The GCP project ID in which slaves are launched. */
     private String project;
 
+    /** The GCE zone ID in which slaves are launched. */
     private String zone;
 
+    /** The credentials JSON filepath; or empty to use Application Default Credentials. */
     private String credentialsFilePath;
 
+    /** The list of slave specs. */
     private List<PersistentSlaveSpec> persistentSlaveSpecs;
 
     @DataBoundConstructor
@@ -66,11 +75,17 @@ public class GoogleCloud extends Cloud {
         return this.zone;
     }
 
+    /**
+     * Stores the list of slave specs.
+     */
     @DataBoundSetter
     public void setPersistentSlaveSpecs(List<PersistentSlaveSpec> persistentSlaveSpecs) {
         this.persistentSlaveSpecs = persistentSlaveSpecs;
     }
 
+    /**
+     * Returns the list of slave specs.
+     */
     public List<PersistentSlaveSpec> getPersistentSlaveSpecs() {
         return this.persistentSlaveSpecs;
     }
@@ -118,10 +133,26 @@ public class GoogleCloud extends Cloud {
     }
 
     /**
+     * Makes a GoogleCredential instance to manipulate slave instances.
+     */
+    private GoogleCredential makeCredential() throws IOException {
+        String path = this.credentialsFilePath.trim();
+        if (path.isEmpty()) {
+            return GoogleCredential.getApplicationDefault();
+        }
+
+        LOGGER.info("use service account json file " + path);
+        try (FileInputStream fis = new FileInputStream(path)) {
+            return GoogleCredential.fromStream(fis)
+                .createScoped(Collections.singletonList("https://www.googleapis.com/auth/compute"));
+        }
+    }
+
+    /**
      * Sets up and launches the instance.
      */
     public PersistentSlave setupAndLaunch(PersistentSlave slave) throws Exception {
-        GceInstance gi = new GceInstance(project, zone, slave.getNodeName());
+        GceInstance gi = new GceInstance(makeCredential(), project, zone, slave.getNodeName());
         Map<String, String> jenkinsMetadata = new HashMap<String, String>();
         jenkinsMetadata.put("jenkinsSecret", slave.getComputer().getJnlpMac());
         if (! gi.addMetadata(jenkinsMetadata)) {
@@ -142,7 +173,7 @@ public class GoogleCloud extends Cloud {
      */
     public void terminate(String instanceName) throws IOException, InterruptedException {
         try {
-            GceInstance gi = new GceInstance(project, zone, instanceName);
+            GceInstance gi = new GceInstance(makeCredential(), project, zone, instanceName);
             if (! gi.stop()) {
                 LOGGER.info("failed to stop the instance");
             }
