@@ -26,6 +26,11 @@
     <f:textbox default="10" />
   </f:entry>
 
+  <f:descriptorList
+    title="${%Node Properties}"
+    descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}"
+    field="nodeProperties" />
+
 </j:jelly>
 
 <!-- vim: et sw=2 sts=2 ft=xml

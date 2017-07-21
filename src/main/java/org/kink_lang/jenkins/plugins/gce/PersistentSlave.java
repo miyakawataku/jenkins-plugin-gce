@@ -2,6 +2,7 @@ package org.kink_lang.jenkins.plugins.gce;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -49,11 +50,13 @@ public class PersistentSlave extends AbstractCloudSlave {
             String remoteFS,
             String numExecutors,
             String labelString,
-            String retentionSeconds) throws Descriptor.FormException, IOException{
+            String retentionSeconds,
+            List<NodeProperty<PersistentSlave>> nodeProperties
+            ) throws Descriptor.FormException, IOException{
         super(name, nodeDescription, remoteFS, numExecutors, Mode.NORMAL, labelString,
                 new JNLPLauncher(),
                 new CloudRetentionStrategy(Integer.parseInt(retentionSeconds)),
-                Collections.<NodeProperty<PersistentSlave>>emptyList());
+                nodeProperties == null ? Collections.<NodeProperty<PersistentSlave>>emptyList() : nodeProperties);
         this.retentionSeconds = retentionSeconds;
     }
 

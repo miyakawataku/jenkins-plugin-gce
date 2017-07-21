@@ -2,6 +2,7 @@ package org.kink_lang.jenkins.plugins.gce;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -20,6 +21,7 @@ import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.slaves.NodeProperty;
 import hudson.slaves.NodeProvisioner;
 import hudson.tools.ToolLocationNodeProperty;
 import hudson.util.FormValidation;
@@ -49,6 +51,9 @@ public class PersistentSlaveSpec
 
     /** The remote FS root. */
     private String remoteFS;
+
+    /** The list of node properties. */
+    private List<NodeProperty<PersistentSlave>> nodeProperties;
 
     @DataBoundConstructor
     public PersistentSlaveSpec() {
@@ -137,6 +142,21 @@ public class PersistentSlaveSpec
     }
 
     /**
+     * Stores the list of node properties.
+     */
+    @DataBoundSetter
+    public void setNodeProperties(List<NodeProperty<PersistentSlave>> nodeProperties) {
+        this.nodeProperties = nodeProperties;
+    }
+
+    /**
+     * Returns the list of node properties.
+     */
+    public List<NodeProperty<PersistentSlave>> getNodeProperties() {
+        return this.nodeProperties;
+    }
+
+    /**
      * Returns true if the slave can be provisioned.
      */
     public boolean canProvision(Label label) {
@@ -164,7 +184,8 @@ public class PersistentSlaveSpec
                     this.remoteFS,
                     this.numExecutors,
                     this.label,
-                    getRetentionSeconds());
+                    getRetentionSeconds(),
+                    this.nodeProperties);
             slave.setCloudName(cloud.name);
             Jenkins.getInstance().addNode(slave);
 
