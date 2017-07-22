@@ -11,8 +11,8 @@
   </parent>
 
   <groupId>org.kink_lang.jenkins</groupId>
-  <artifactId>jenkins-plugin-gce</artifactId>
-  <version>0.1</version>
+  <artifactId>gce</artifactId>
+  <version>0.0.1</version>
   <packaging>hpi</packaging>
 
   <name>GCE Jenkins Plugin</name>
