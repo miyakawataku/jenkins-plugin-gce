@@ -170,7 +170,7 @@ public class PersistentSlaveSpec
      * Provisions the specified instance.
      */
     public NodeProvisioner.PlannedNode provision(
-            final GoogleCloud cloud, Label label, final String project, final String zone) {
+            final GoogleCloud cloud, Label label) {
         if (! canProvision(label)) {
             LOGGER.info("provision: cannot provision");
             return null;

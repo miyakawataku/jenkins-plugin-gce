@@ -123,7 +123,7 @@ public class GoogleCloud extends Cloud {
                 break;
             }
 
-            NodeProvisioner.PlannedNode plannedNode = spec.provision(this, label, getProject(), getZone());
+            NodeProvisioner.PlannedNode plannedNode = spec.provision(this, label);
             if (plannedNode != null) {
                 excessWorkload -= plannedNode.numExecutors;
                 result.add(plannedNode);
