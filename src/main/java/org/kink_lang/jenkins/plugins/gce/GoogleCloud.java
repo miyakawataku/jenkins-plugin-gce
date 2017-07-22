@@ -8,13 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.security.GeneralSecurityException;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.slaves.Cloud;
+import hudson.slaves.CloudRetentionStrategy;
 import hudson.slaves.NodeProvisioner;
+import hudson.slaves.RetentionStrategy;
 import hudson.util.FormValidation;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -36,6 +39,9 @@ public class GoogleCloud extends Cloud {
 
     /** The credentials JSON filepath; or empty to use Application Default Credentials. */
     private String credentialsFilePath;
+
+    /** The timeout minutes of slaves. */
+    private String timeoutMinutes;
 
     /** The list of slave specs. */
     private List<PersistentSlaveSpec> persistentSlaveSpecs;
@@ -105,6 +111,21 @@ public class GoogleCloud extends Cloud {
         return this.credentialsFilePath;
     }
 
+    /**
+     * Stores the timeout minutes of slaves.
+     */
+    @DataBoundSetter
+    public void setTimeoutMinutes(String timeoutMinutes) {
+        this.timeoutMinutes = timeoutMinutes;
+    }
+
+    /**
+     * Returns the timeout minutes of slaves.
+     */
+    public String getTimeoutMinutes() {
+        return this.timeoutMinutes;
+    }
+
     @Override
     public boolean canProvision(Label label) {
         for (PersistentSlaveSpec spec : this.persistentSlaveSpecs) {
@@ -130,6 +151,13 @@ public class GoogleCloud extends Cloud {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the retention strategy of slaves.
+     */
+    public RetentionStrategy getRetentionStrategy() {
+        return new CloudRetentionStrategy(Integer.parseInt(timeoutMinutes));
     }
 
     /**
@@ -215,6 +243,18 @@ public class GoogleCloud extends Cloud {
             return zone.trim().isEmpty()
                 ? FormValidation.error("Zone ID must be filled")
                 : FormValidation.ok();
+        }
+
+        /** Pattern of decimal numbers. */
+        private static final Pattern DECIMAL_PATTERN = Pattern.compile("[0-9]{1,5}");
+
+        /**
+         * Validates the timeout minutes of slaves.
+         */
+        public FormValidation doCheckTimeoutMinutes(@QueryParameter String timeoutMinutes) {
+            return DECIMAL_PATTERN.matcher(timeoutMinutes).matches()
+                ? FormValidation.ok()
+                : FormValidation.error("Slave timeout minutes must be 0-99999");
         }
 
     }

@@ -40,9 +40,6 @@ public class PersistentSlaveSpec
 
     private String label;
 
-    /** Seconds for which the slave stays up. */
-    private String retentionSeconds;
-
     /** # of executors. */
     private String numExecutors;
 
@@ -127,21 +124,6 @@ public class PersistentSlaveSpec
     }
 
     /**
-     * Stores seconds for which the slave stays up.
-     */
-    @DataBoundSetter
-    public void setRetentionSeconds(String retentionSeconds) {
-        this.retentionSeconds = retentionSeconds;
-    }
-
-    /**
-     * Returns the seconds for which the slave stays up.
-     */
-    public String getRetentionSeconds() {
-        return this.retentionSeconds;
-    }
-
-    /**
      * Stores the list of node properties.
      */
     @DataBoundSetter
@@ -184,9 +166,8 @@ public class PersistentSlaveSpec
                     this.remoteFS,
                     this.numExecutors,
                     this.label,
-                    getRetentionSeconds(),
+                    cloud.name,
                     this.nodeProperties);
-            slave.setCloudName(cloud.name);
             Jenkins.getInstance().addNode(slave);
 
             Future<Node> future = Computer.threadPoolForRemoting.submit(new Callable<Node>() {
@@ -225,16 +206,6 @@ public class PersistentSlaveSpec
 
         /** Pattern of decimal numbers. */
         private static final Pattern DECIMAL_PATTERN = Pattern.compile("[0-9]+");
-
-        /**
-         * Checks retentionSeconds field.
-         */
-        public FormValidation doCheckRetentionSeconds(@QueryParameter String retentionSeconds) {
-            return DECIMAL_PATTERN.matcher(retentionSeconds).matches()
-                ? FormValidation.ok()
-                : FormValidation.error("Retention seconds must be a decimal number");
-
-        }
 
         /**
          * Checks # of executors.

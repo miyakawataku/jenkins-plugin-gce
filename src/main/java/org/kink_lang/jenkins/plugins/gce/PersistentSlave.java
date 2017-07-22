@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
 
@@ -16,10 +15,8 @@ import hudson.model.TaskListener;
 import hudson.slaves.AbstractCloudSlave;
 import hudson.slaves.AbstractCloudComputer;
 import hudson.slaves.Cloud;
-import hudson.slaves.CloudRetentionStrategy;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
-import hudson.slaves.RetentionStrategy;
 import hudson.util.FormValidation;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -40,9 +37,6 @@ public class PersistentSlave extends AbstractCloudSlave {
     /** Cloud name. */
     private String cloudName;
 
-    /** Seconds for which the slave stays up when idle. */
-    private String retentionSeconds;
-
     @DataBoundConstructor
     public PersistentSlave(
             String name,
@@ -50,14 +44,14 @@ public class PersistentSlave extends AbstractCloudSlave {
             String remoteFS,
             String numExecutors,
             String labelString,
-            String retentionSeconds,
+            String cloudName,
             List<NodeProperty<PersistentSlave>> nodeProperties
             ) throws Descriptor.FormException, IOException{
         super(name, nodeDescription, remoteFS, numExecutors, Mode.NORMAL, labelString,
                 new JNLPLauncher(),
-                new CloudRetentionStrategy(Integer.parseInt(retentionSeconds)),
+                getCloud(cloudName).getRetentionStrategy(),
                 nodeProperties == null ? Collections.<NodeProperty<PersistentSlave>>emptyList() : nodeProperties);
-        this.retentionSeconds = retentionSeconds;
+        this.cloudName = cloudName;
     }
 
     /**
@@ -75,30 +69,15 @@ public class PersistentSlave extends AbstractCloudSlave {
         return this.cloudName;
     }
 
-    /**
-     * Stores the retentionSeconds property.
-     */
-    public void setRetentionSeconds(String retentionSeconds) {
-        this.retentionSeconds = retentionSeconds;
-        this.setRetentionStrategy(new CloudRetentionStrategy(Integer.parseInt(retentionSeconds)));
-    }
-
-    /**
-     * Returns the retentionSeconds property.
-     */
-    public String getRetentionSeconds() {
-        return this.retentionSeconds;
-    }
-
     @Override
     public AbstractCloudComputer<PersistentSlave> createComputer() {
         return new PersistentComputer(this);
     }
 
     /**
-     * Returns the cloud which makes the slave.
+     * Returns the cloud for the name.
      */
-    private GoogleCloud getCloud() {
+    private static GoogleCloud getCloud(String cloudName) {
         Cloud cloud = Jenkins.getInstance().getCloud(cloudName);
         if (cloud == null) {
             String msg = String.format(
@@ -113,6 +92,13 @@ public class PersistentSlave extends AbstractCloudSlave {
         }
 
         return (GoogleCloud) cloud;
+    }
+
+    /**
+     * Returns the cloud which makes the slave.
+     */
+    private GoogleCloud getCloud() {
+        return getCloud(this.cloudName);
     }
 
     @Override
@@ -132,19 +118,6 @@ public class PersistentSlave extends AbstractCloudSlave {
         @Override
         public boolean isInstantiable() {
             return false;
-        }
-
-        /** Pattern of decimal numbers. */
-        private static final Pattern DECIMAL_PATTERN = Pattern.compile("[0-9]+");
-
-        /**
-         * Checks retentionSeconds field.
-         */
-        public FormValidation doCheckRetentionSeconds(@QueryParameter String retentionSeconds) {
-            return DECIMAL_PATTERN.matcher(retentionSeconds).matches()
-                ? FormValidation.ok()
-                : FormValidation.error("Retention seconds must be a decimal number");
-
         }
 
     }
