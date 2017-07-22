@@ -58,7 +58,7 @@ public class PersistentSlaveSpec
 
     @DataBoundSetter
     public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
+        this.instanceName = instanceName.trim();
     }
 
     public String getInstanceName() {

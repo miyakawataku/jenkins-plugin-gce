@@ -56,7 +56,7 @@ public class GoogleCloud extends Cloud {
      */
     @DataBoundSetter
     public void setProject(String project) {
-        this.project = project;
+        this.project = project.trim();
     }
 
     /**
@@ -71,7 +71,7 @@ public class GoogleCloud extends Cloud {
      */
     @DataBoundSetter
     public void setZone(String zone) {
-        this.zone = zone;
+        this.zone = zone.trim();
     }
 
     /**
