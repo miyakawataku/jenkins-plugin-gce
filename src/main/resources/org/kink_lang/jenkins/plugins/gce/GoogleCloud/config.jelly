@@ -13,7 +13,7 @@
     <f:textbox />
   </f:entry>
 
-  <f:entry title="Credentials file path on master" field="credentialsFilePath" description="Leave it empty to use Application Default Credentials">
+  <f:entry title="Credentials JSON path on master (if any)" field="credentialsFilePath">
     <f:textbox />
   </f:entry>
 
